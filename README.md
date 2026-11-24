@@ -1,4 +1,5 @@
 # About This repository
+
 # ESP-IDE Block Coding Micropython Addon
 This is repository of Addon of "ESP IDE  Block Coding" for Micropython for different Micro Controller such as ESP32,ESP8266,Pico ,Generic etc.
 
@@ -15,6 +16,16 @@ This is repository of Addon of "ESP IDE  Block Coding" for Micropython for diffe
 Addons for ESP IDE Block Coding.
 
 Many more  Block are commming.
+
+This is  repository created by Jayesh Zatakia
+
+# Contact
+# Author : Jayesh Zatakia
+
+# Email : zatakiajayesh@zohomail.in
+
+# Phone : +91 9870168289
+
    
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
