@@ -7,12 +7,12 @@ This is repository of Addon of "ESP IDE  Block Coding" for Micropython for diffe
 
 # This repository Contains 
   
-    MQTT ( Blocks for connecting to an MQTT broker and publishing or receiving messages. )
-    Email ( Send email messages, with or without file attachments, through an SMTP server. )
-    HTTP Client ( HTTP GET and POST blocks using xrequests and response helper blocks.)
-    Web Sever ( Blocks for running a simple HTTP web server on ESP devices. )
-    RF433 ( 433 MHz RF receiver and transmitter blocks for ESP devices.)
-    Google Sheet ( Send cell data to a Google Spreadsheet through a Google Apps Script deployment )
+    MQTT ( Blocks : for connecting to an MQTT broker and publishing or receiving messages. )
+    Email ( Block :Send email messages, with or without file attachments, through an SMTP server. )
+    HTTP Client ( Block : HTTP GET and POST blocks using xrequests and response helper blocks.)
+    Web Sever ( Blocks : for running a simple HTTP web server on ESP devices. )
+    RF433 ( Block : 433 MHz RF receiver and transmitter blocks for ESP devices.)
+    Google Sheet ( Block : Send cell data to a Google Spreadsheet through a Google Apps Script deployment )
   
 Addons for ESP/Pico IDE Block Coding.
 
