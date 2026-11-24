@@ -1,0 +1,257 @@
+// MQTT add-on for ESP IDE
+
+/*
+{
+  "id": "MQTT",
+  "name": "MQTT",
+  "description": "Blocks for connecting to an MQTT broker and publishing or receiving messages.",
+  "version": "1.0.0",
+  "author": "Jayesh Zatkia + AI",
+  "tags": ["MQTT", "IoT", "Network", "Telemetry"],
+  "screenshots": ["MQTT.png"],
+  "changelog": "v1.0.0 - Initial MQTT block set."
+}
+*/
+
+function addMqttLib() {
+  if (!Blockly.Python.definitions_['mqtt_lib']) {
+    Blockly.Python.definitions_['mqtt_lib'] = `
+try:
+    from umqtt.simple import MQTTClient
+except ImportError:
+    MQTTClient = None
+
+try:
+    import ujson
+except ImportError:
+    import json as ujson
+
+_mqtt_payload_buffers = {}
+`;
+  }
+}
+
+function mqttStartCode_(block) {
+  addMqttLib();
+  var varName = Blockly.Python.nameDB_.getName(block.getFieldValue('NAME'), Blockly.Variables.NAME_TYPE);
+  var server = Blockly.Python.valueToCode(block, 'SERVER', Blockly.Python.ORDER_ATOMIC) || "''";
+  var port = Blockly.Python.valueToCode(block, 'PORT', Blockly.Python.ORDER_ATOMIC) || '1883';
+  var username = Blockly.Python.valueToCode(block, 'USERNAME', Blockly.Python.ORDER_ATOMIC) || "''";
+  var password = Blockly.Python.valueToCode(block, 'PASSWORD', Blockly.Python.ORDER_ATOMIC) || "''";
+  return varName + ' = MQTTClient(' + Blockly.Python.quote_(varName) + ', ' + server + ', port=' + port + ', user=' + username + ', password=' + password + ')\n' +
+    varName + '.connect()\n';
+}
+
+Blockly.Python['mqtt_start'] = mqttStartCode_;
+
+Blockly.Python['mqtt_add_buffer'] = function(block) {
+  addMqttLib();
+  var varName = Blockly.Python.nameDB_.getName(block.getFieldValue('NAME'), Blockly.Variables.NAME_TYPE);
+  var field = Blockly.Python.valueToCode(block, 'FIELD', Blockly.Python.ORDER_ATOMIC) || "''";
+  var value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_ATOMIC) || 'None';
+  return '_mqtt_payload_buffers[' + field + '] = ' + value + '\n';
+};
+
+Blockly.Python['mqtt_publish_buffer'] = function(block) {
+  addMqttLib();
+  var varName = Blockly.Python.nameDB_.getName(block.getFieldValue('NAME'), Blockly.Variables.NAME_TYPE);
+  var topic = Blockly.Python.valueToCode(block, 'TOPIC', Blockly.Python.ORDER_ATOMIC) || "''";
+  var qos = block.getFieldValue('QOS') || '0';
+  return varName + '.publish(' + topic + ', ujson.dumps(_mqtt_payload_buffers), qos=' + qos + ')\n';
+};
+
+Blockly.Python['mqtt_publish_payload'] = function(block) {
+  addMqttLib();
+  var varName = Blockly.Python.nameDB_.getName(block.getFieldValue('NAME'), Blockly.Variables.NAME_TYPE);
+  var topic = Blockly.Python.valueToCode(block, 'TOPIC', Blockly.Python.ORDER_ATOMIC) || "''";
+  var payload = Blockly.Python.valueToCode(block, 'PAYLOAD', Blockly.Python.ORDER_ATOMIC) || "''";
+  var qos = block.getFieldValue('QOS') || '0';
+  return varName + '.publish(' + topic + ', ' + payload + ', qos=' + qos + ')\n';
+};
+
+Blockly.Python['mqtt_set_callback'] = function(block) {
+  addMqttLib();
+  var varName = Blockly.Python.nameDB_.getName(block.getFieldValue('NAME'), Blockly.Variables.NAME_TYPE);
+  var dataVar = Blockly.Python.nameDB_.getName(block.getFieldValue('DATA'), Blockly.Variables.NAME_TYPE);
+  var topicVar = Blockly.Python.nameDB_.getName(block.getFieldValue('TOPIC'), Blockly.Variables.NAME_TYPE);
+  var branch = Blockly.Python.statementToCode(block, 'DO');
+  branch = Blockly.Python.addLoopTrap(branch, block.id);
+  return 'def _mqtt_callback_' + block.id.replace(/[^a-zA-Z0-9_]/g, '_') + '(' + topicVar + ', ' + dataVar + '):\n' +
+    (branch || '  pass\n') +
+    varName + '.set_callback(_mqtt_callback_' + block.id.replace(/[^a-zA-Z0-9_]/g, '_') + ')\n';
+};
+
+Blockly.Python['mqtt_subscribe'] = function(block) {
+  addMqttLib();
+  var varName = Blockly.Python.nameDB_.getName(block.getFieldValue('NAME'), Blockly.Variables.NAME_TYPE);
+  var topic = Blockly.Python.valueToCode(block, 'TOPIC', Blockly.Python.ORDER_ATOMIC) || "''";
+  return varName + '.subscribe(' + topic + ')\n';
+};
+
+Blockly.Python['mqtt_check'] = function(block) {
+  addMqttLib();
+  var varName = Blockly.Python.nameDB_.getName(block.getFieldValue('NAME'), Blockly.Variables.NAME_TYPE);
+  return varName + '.check_msg()\n';
+};
+
+Blockly.Python['mqtt_wait'] = function(block) {
+  addMqttLib();
+  var varName = Blockly.Python.nameDB_.getName(block.getFieldValue('NAME'), Blockly.Variables.NAME_TYPE);
+  return varName + '.wait_msg()\n';
+};
+
+Blockly.Python['mqtt_disconnect'] = function(block) {
+  addMqttLib();
+  var varName = Blockly.Python.nameDB_.getName(block.getFieldValue('NAME'), Blockly.Variables.NAME_TYPE);
+  return varName + '.disconnect()\n';
+};
+
+Blockly.Blocks['mqtt_start'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('Start MQTT Client')
+      .appendField('name')
+      .appendField(new Blockly.FieldVariable('mqtt'), 'NAME');
+    this.appendValueInput('SERVER').setCheck('String').setAlign(Blockly.ALIGN_RIGHT).appendField('Server Address');
+    this.appendValueInput('PORT').setCheck('Number').setAlign(Blockly.ALIGN_RIGHT).appendField('Server Port');
+    this.appendValueInput('USERNAME').setCheck('String').setAlign(Blockly.ALIGN_RIGHT).appendField('Username');
+    this.appendValueInput('PASSWORD').setCheck('String').setAlign(Blockly.ALIGN_RIGHT).appendField('Password');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour('#5c6bc0');
+    this.setTooltip('Connect a named MQTT client to a broker.');
+    this.setHelpUrl('');
+  }
+};
+
+Blockly.Blocks['mqtt_add_buffer'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('Add data to MQTT Buffer')
+      .appendField(new Blockly.FieldVariable('mqtt'), 'NAME');
+    this.appendValueInput('FIELD').setCheck('String').setAlign(Blockly.ALIGN_RIGHT).appendField('Field Name');
+    this.appendValueInput('VALUE').setAlign(Blockly.ALIGN_RIGHT).appendField('Value');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour('#5c6bc0');
+  }
+};
+
+Blockly.Blocks['mqtt_publish_buffer'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('Publish Buffer to MQTT Topic')
+      .appendField(new Blockly.FieldVariable('mqtt'), 'NAME')
+      .appendField('QOS')
+      .appendField(new Blockly.FieldDropdown([['0 - at most once', '0'], ['1 - at least once', '1'], ['2 - exactly once', '2']]), 'QOS');
+    this.appendValueInput('TOPIC').setCheck('String').setAlign(Blockly.ALIGN_RIGHT).appendField('Topic');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour('#5c6bc0');
+  }
+};
+
+Blockly.Blocks['mqtt_publish_payload'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('Publish Payload to MQTT Topic')
+      .appendField(new Blockly.FieldVariable('mqtt'), 'NAME')
+      .appendField('QOS')
+      .appendField(new Blockly.FieldDropdown([['0 - at most once', '0'], ['1 - at least once', '1'], ['2 - exactly once', '2']]), 'QOS');
+    this.appendValueInput('TOPIC').setCheck('String').setAlign(Blockly.ALIGN_RIGHT).appendField('Topic');
+    this.appendValueInput('PAYLOAD').setCheck('String').setAlign(Blockly.ALIGN_RIGHT).appendField('Payload');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour('#5c6bc0');
+  }
+};
+
+Blockly.Blocks['mqtt_set_callback'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('Set Callback to MQTT Messages')
+      .appendField(new Blockly.FieldVariable('mqtt'), 'NAME')
+      .appendField('with')
+      .appendField(new Blockly.FieldVariable('data_bytes'), 'DATA')
+      .appendField('received from')
+      .appendField(new Blockly.FieldVariable('topic'), 'TOPIC');
+    this.appendStatementInput('DO').appendField('do');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour('#5c6bc0');
+  }
+};
+
+Blockly.Blocks['mqtt_subscribe'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('Subscribe to MQTT Topic')
+      .appendField(new Blockly.FieldVariable('mqtt'), 'NAME');
+    this.appendValueInput('TOPIC').setCheck('String').setAlign(Blockly.ALIGN_RIGHT).appendField('Topic');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour('#5c6bc0');
+  }
+};
+
+Blockly.Blocks['mqtt_check'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('Check for MQTT Server messages')
+      .appendField(new Blockly.FieldVariable('mqtt'), 'NAME');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour('#5c6bc0');
+  }
+};
+
+Blockly.Blocks['mqtt_wait'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('Wait for MQTT Server messages')
+      .appendField(new Blockly.FieldVariable('mqtt'), 'NAME');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour('#5c6bc0');
+  }
+};
+
+Blockly.Blocks['mqtt_disconnect'] = {
+  init: function() {
+    this.appendDummyInput()
+      .appendField('Disconnect MQTT Client')
+      .appendField(new Blockly.FieldVariable('mqtt'), 'NAME');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour('#5c6bc0');
+  }
+};
+
+<!toolbox!>
+
+<category name="MQTT" colour="#5c6bc0">
+  <block type="mqtt_start">
+    <value name="SERVER"><shadow type="text"><field name="TEXT">test.mosquitto.org:1883</field></shadow></value>
+    <value name="PORT"><shadow type="math_number"><field name="NUM">1883</field></shadow></value>
+    <value name="USERNAME"><shadow type="text"><field name="TEXT"></field></shadow></value>
+    <value name="PASSWORD"><shadow type="text"><field name="TEXT"></field></shadow></value>
+  </block>
+  <block type="mqtt_add_buffer">
+    <value name="FIELD"><shadow type="text"><field name="TEXT">field</field></shadow></value>
+    <value name="VALUE"><shadow type="text"><field name="TEXT">value</field></shadow></value>
+  </block>
+  <block type="mqtt_publish_buffer">
+    <value name="TOPIC"><shadow type="text"><field name="TEXT">topic</field></shadow></value>
+  </block>
+  <block type="mqtt_publish_payload">
+    <value name="TOPIC"><shadow type="text"><field name="TEXT">topic</field></shadow></value>
+    <value name="PAYLOAD"><shadow type="text"><field name="TEXT">payload</field></shadow></value>
+  </block>
+  <block type="mqtt_set_callback"></block>
+  <block type="mqtt_subscribe">
+    <value name="TOPIC"><shadow type="text"><field name="TEXT">topic</field></shadow></value>
+  </block>
+  <block type="mqtt_check"></block>
+  <block type="mqtt_wait"></block>
+  <block type="mqtt_disconnect"></block>
+</category>
