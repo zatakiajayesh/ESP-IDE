@@ -7,7 +7,7 @@ This is repository of Addon of "ESP IDE  Block Coding" for Micropython for diffe
 
 # This repository Contains 
   
-    MQTT
+    MQTT (Blocks for connecting to an MQTT broker and publishing or receiving messages )
     Email
     HTTP Client
     Web Sever
