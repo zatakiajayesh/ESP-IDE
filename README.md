@@ -29,7 +29,7 @@ This is  repository created by Jayesh Zatakia
    
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# ESP IDE is an Open Source Development Environment for Teaching Programming Graphically.
+# ESP IDE is an Open Source Development Environment for Teaching Micropython Programming Graphically.
 
 It is designed for ESP32 and RP2040 Microcontrollers and uses MicroPython.
 
