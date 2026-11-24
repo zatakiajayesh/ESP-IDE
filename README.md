@@ -1,6 +1,6 @@
 # About This repository
 
-# ESP-IDE Block Coding Micropython Addon
+#  Block Coding Micropython Addon for ESP-IDE
 This is repository of Addon of "ESP IDE  Block Coding" for Micropython for different Micro Controller such as ESP32,ESP8266,Pico ,Generic etc.
 
 # This repository Contains 
@@ -30,6 +30,8 @@ This is  repository created by Jayesh Zatakia
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # ESP IDE is an Open Source Development Environment for Teaching Micropython Programming Graphically.
+
+# https://www.espide.eu/
 
 It is designed for ESP32 and RP2040 Microcontrollers and uses MicroPython.
 
